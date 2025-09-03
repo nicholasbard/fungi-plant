@@ -1,2 +1,4 @@
 # fungi-plant
-Database for plant-associated fungi
+Fungi on Living Tissue and other databases.
+Databases available in Final_comb_DBs directory.
+
