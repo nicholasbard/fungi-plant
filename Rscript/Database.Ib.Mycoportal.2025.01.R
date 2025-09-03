@@ -75,8 +75,7 @@ Myco.po.ab<-rbind(Myco.po1.ab, Myco.po2.ab)
 ###not sure if this is an issue.... Warning messages:
 ##1: In `[<-.factor`(`*tmp*`, ri, value = c(9851470L, 9851469L, 9851446L,  : invalid factor level, NA generated. 2: In `[<-.factor`(`*tmp*`, ri, value = c(11736L, 187152L, 136862L,  :invalid factor level, NA generated
 
-### saveRDS(Myco.po.ab, '~/data2/LPs/rds/Myco.po.ab.rds')
-Myco.po.ab<- readRDS('intermediate_rds_csv/Mycoportal/Myco.po.ab.rds')
+### saveRDS(Myco.po.ab, 'OSF/Mycoportal/Myco.po.ab.rds')
 Myco.po.ab$associatedTaxa<-dplyr::na_if(Myco.po.ab$associatedTaxa, "")
 Myco.po.ab$habitat<-dplyr::na_if(Myco.po.ab$habitat, "")
 Myco.po.ab$substrate<-dplyr::na_if(Myco.po.ab$substrate, "")
@@ -141,12 +140,26 @@ all.hits<-data.frame(all.hits, word.count)
 all.hits.sp <- all.hits %>% 
   filter(!all.hits$word.count=="1")
 
-Myco.po.ab.sp<-data.frame(all.hits.sp$Mycop.entry, all.hits.sp$Mycop.plant, Myco.po.ab[all.hits.sp$Mycop.entry,] ) 
-# saveRDS(Myco.po.ab.sp, 'intermediate_rds_csv/Mycoportal/Myco.po.ab.sp.rds')
 # Now we have fungi and associated plant species in one list.
+Myco.po.ab.sp<-data.frame(all.hits.sp$Mycop.entry, all.hits.sp$Mycop.plant, Myco.po.ab[all.hits.sp$Mycop.entry,] ) 
+
+
+#~#~#~#~#~##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
+#~#~#~#~#~##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
+
+#~#~#~#~#~##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
+# I. Here we create Myco.po.ab.sp, which will be used as raw data for the "Locally co-occurring" database.
+#~#~#~#~#~##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
+
+# saveRDS(Myco.po.ab.sp, 'intermediate_rds_csv/Mycoportal/Myco.po.ab.sp.rds')
+
+#~#~#~#~#~##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
+#~#~#~#~#~##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
+
+
 
 #save everything that didn't detect a latin name at all (genus or species level). There are common names in here 
-# that mostly can work for genus, with some for species (ie. balsam fir). There are also Russian names that I probably have to reassess...
+# that mostly can work for genus, with some for species (ie. balsam fir). There are also Russian names to reassess.
 Mycop.undet<-Myco.po.ab[-(sort(unique(all.hits$Mycop.entry))),]
 # saveRDS(Mycop.undet, 'intermediate_rds_csv/Mycoportal/Mycop.undet.rds')
 # write.csv(Mycop.undet, 'OSF/Mycoportal/Mycoportal.undet.csv')
@@ -209,6 +222,20 @@ faulen<-c(grep('faulen', (Myco.on.plant[,13]), ignore.case = TRUE),grep('faulen'
 dung<-c(grep('dung', (Myco.on.plant[,13]), ignore.case = TRUE),grep('dung', (Myco.on.plant[,15]), ignore.case = TRUE),grep('dung', (Myco.on.plant[,16]), ignore.case = TRUE))
 putri<-c(grep('putri', (Myco.on.plant[,13]), ignore.case = TRUE),grep('putri', (Myco.on.plant[,15]), ignore.case = TRUE),grep('putri', (Myco.on.plant[,16]), ignore.case = TRUE))
 putre<-c(grep('putre', (Myco.on.plant[,13]), ignore.case = TRUE),grep('putre', (Myco.on.plant[,15]), ignore.case = TRUE),grep('putre', (Myco.on.plant[,16]), ignore.case = TRUE))
+
+#For "on plant tissue" (not final dataset), keep several of those we are removing for the living database.
+Myco.on.plant.remove<-Myco.on.plant[unique(c(soil, litter, under, duff, dung, ground)),]
+Mop.remove2<-Myco.on.plant.remove[grep("^on|host:", Myco.on.plant.remove$associatedTaxa, ignore.case = TRUE, invert = TRUE),]
+Myco.on.plant.FIN<-setdiff(Myco.on.plant, Mop.remove2)
+
+#~#~#~#~#~##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
+# II. Here we create Myco.on.plant.FIN, which will be used as raw data for the "On plant tissue" database.
+#~#~#~#~#~##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
+
+# saveRDS(Myco.on.plant.FIN, 'intermediate_rds_csv/Mycoportal/Myco.on.plant.FIN.rds')
+
+#~#~#~#~#~##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
+#~#~#~#~#~##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
 
 # Collect fungi on dead plants and miscellaneous (e.g., soil, base of tree).
 deadplant<-unique(c(dead,decomp,stump,fallen,lo,logg,dying,muert,rott,decay,soil,litter,under,duff,ground,emortu,downtree,baseoftree,baseoftrunk,hypogeous,faulen,dung,putri,putre))
@@ -491,7 +518,7 @@ lichenlist<-read.csv("ext_data/World Checklist of Genera of Lichenized Fungi_169
 #make genus column
 lichenlist$genus<-gsub(" sp.", "", lichenlist$ScientificName)
 #filter lichenizing fungi
-mycop.cleaned.nl<-mycop.cleaned3[which(!mycop.cleaned$genus %in% lichenlist$genus),]
+mycop.cleaned.nl<-mycop.cleaned3[which(!mycop.cleaned3$genus %in% lichenlist$genus),]
 #remove fungal taxon entries that contain word root "lichen"
 nlmy<-mycop.cleaned.nl[grep("lichen",mycop.cleaned.nl$scientificName, ignore.case=TRUE),]
 mycop.cleaned.nl2<-mycop.cleaned.nl[which(!mycop.cleaned.nl$scientificName %in% nlmy$scientificName),]
@@ -694,7 +721,7 @@ mcn.h.si<-new.mcn.keep %>%
   distinct(scientificName, .keep_all=TRUE)
 mcnh.si.df<-data.frame(mcn.h.si)
 #leftovers
-undet.mcn.3A<-anti_join(undet.mcn.2b, new.mcn.keep)
+undet.mcn.3<-anti_join(undet.mcn.2b, new.mcn.keep)
 
 undetmcn3.singles<-undet.mcn.3 %>%
   distinct(scientificName, match.name, habitat, associatedTaxa, substrate, .keep_all = TRUE)
@@ -765,15 +792,15 @@ keep.M.h.all.t<-M.all.t[grep("^lea| lea|petiol|Blattern|gall|canker|fruit|broom"
 keep.M.at.all.t<-M.all.t[grep("^lea| lea|petiol|Blattern|gall|canker|fruit|broom", M.all.t$associatedTaxa, ignore.case=TRUE),]
 Mycopo.workingdata<-rbind.data.frame(Mycopo.wdraw3, keep.M.h.all.t, keep.M.at.all.t)
 
-saveRDS(Mycopo.workingdata, "intermediate_rds_csv/Mycoportal/Mycopo.workingdata.2023.11.16.rds") 
-write.csv(Mycopo.workingdata, "OSF/Mycoportal/Mycopo.workingdata.2023.11.16.csv")
+saveRDS(Mycopo.workingdata, "intermediate_rds_csv/Mycoportal/Mycopo.workingdata.2025.05.04.rds") 
+write.csv(Mycopo.workingdata, "OSF/Mycoportal/Mycopo.workingdata.2025.05.04.csv")
 
 #keep only fungi IDd to sp.
 Mycopo.workingdata.sp<-Mycopo.workingdata[which(!lengths(strsplit(as.character(Mycopo.workingdata$scientificName), ' ')) ==1),]
 
 
-saveRDS(Mycopo.workingdata.sp, "intermediate_rds_csv/Mycoportal/Mycopo.workingdata.sp.2023.11.16.rds") 
-write.csv(Mycopo.workingdata.sp, "OSF/Mycoportal/Mycopo.workingdata.sp.2023.11.16.csv")
+saveRDS(Mycopo.workingdata.sp, "intermediate_rds_csv/Mycoportal/Mycopo.workingdata.sp.2025.05.04.rds") 
+write.csv(Mycopo.workingdata.sp, "OSF/Mycoportal/Mycopo.workingdata.sp.2025.05.04.csv")
 
 #~# UPDATED FILE 4.2024 - Mycoportal data org
 
@@ -789,7 +816,7 @@ Myco.po1.ab <- data.frame(id=Myco.po$id, institutionCode = Myco.po$institutionCo
 Myco.po2.ab <- data.frame(id=Myco.po2$id, institutionCode = Myco.po2$institutionCode, collectionCode = Myco.po2$collectionCode, occurrenceID = Myco.po2$occurrenceID, basisOfRecord = Myco.po2$basisOfRecord, scientificName = Myco.po2$scientificName, genus = Myco.po2$genus, taxonID = Myco.po2$taxonID, taxonRank = Myco.po2$taxonRank, occurrenceRemarks = Myco.po2$occurrenceRemarks, habitat = Myco.po2$habitat, associatedTaxa = Myco.po2$associatedTaxa, substrate = Myco.po2$substrate, recordId = Myco.po2$recordId, country = Myco.po2$country, db=rep("Mycoportal.db"), scientificNameAuthorship = Myco.po2$scientificNameAuthorship)
 
 Myco.po.ab<-rbind(Myco.po1.ab, Myco.po2.ab)
-#saveRDS(Myco.po.ab, 'intermediate_rds_csv/Mycoportal/Myco.po.ab.with.fungiauth.2024.rds')
+#saveRDS(Myco.po.ab, 'OSF/Mycoportal/Myco.po.ab.with.fungiauth.2024.rds')
 
 #match to author names from raw data file.
 Mycopo.workingdata.sp$Fungi.auth <- Myco.po.ab$scientificNameAuthorship[match(Mycopo.workingdata.sp$id, Myco.po.ab$id)]
@@ -812,29 +839,42 @@ corr.plant<-nameMatch_WCVP(my.h2)
 #these all have accepted_SPNAMEs, so skipping filtration.
 
 Mwd2<-Mwd1[which(Mwd1$match.name.sp %in% corr.plant$Submitted_Name),]
-Mwd2$genus_in_db<-corr.plant$Genus_in_database[match(Mwd2$match.name.sp, corr.plant$Submitted_Name)]
-Mwd2$name_in_db<-corr.plant$Name_in_database[match(Mwd2$match.name.sp, corr.plant$Submitted_Name)]
-Mwd2$author_in_db<-corr.plant$Author_in_database[match(Mwd2$match.name.sp, corr.plant$Submitted_Name)]
-Mwd2$new_name_wcvp<-corr.plant$New_name[match(Mwd2$match.name.sp, corr.plant$Submitted_Name)]
-Mwd2$new_author_wcvp<-corr.plant$New_author[match(Mwd2$match.name.sp, corr.plant$Submitted_Name)]
+Mwd2$Genus_in_database<-corr.plant$Genus_in_database[match(Mwd2$match.name.sp, corr.plant$Submitted_Name)]
+Mwd2$Name_in_database<-corr.plant$Name_in_database[match(Mwd2$match.name.sp, corr.plant$Submitted_Name)]
+Mwd2$Author_in_database<-corr.plant$Author_in_database[match(Mwd2$match.name.sp, corr.plant$Submitted_Name)]
+Mwd2$New_Author<-corr.plant$New_author[match(Mwd2$match.name.sp, corr.plant$Submitted_Name)]
+Mwd2$Accepted_SPNAME<-corr.plant$Accepted_SPNAME[match(Mwd2$match.name.sp, corr.plant$Submitted_Name)]
 
-corrected.Host.sp<-Mwd2$new_name_wcvp
-corrected.Host.sp[which(is.na(corrected.Host.sp))]<-Mwd2$name_in_db[which(is.na(corrected.Host.sp))]
+Mwd2$Accepted_SPAUTHOR<-Mwd2$Author_in_database
+Mwd2$Accepted_SPAUTHOR[which(!is.na(Mwd2$New_author))]<-Mwd2$New_author[which(!is.na(Mwd2$New_author))]
 
+saveRDS(Mwd2, "intermediate_rds_csv/Mycoportal/2025.01.Mwd2.rds")
 
-#make subspecies+authority field
-corrected.Host.auth<-Mwd2$new_author_wcvp
-corrected.Host.auth[which(is.na(corrected.Host.auth))]<-Mwd2$auth[which(is.na(corrected.Host.auth))]
-corrected.Host.ssp<-word(corrected.Host.sp, 3, -1, sep=" ")
+Mwd3<-Mwd2 %>%
+  group_by(Accepted_SPNAME, scientificName) %>%
+  distinct(Accepted_SPNAME, .keep_all=TRUE)
+#
+corrected.Host.sp<-Mwd3$Accepted_SPNAME
+corrected.Host.ssp<-word(Mwd3$Accepted_SPNAME, 3, -1, sep=" ")
+corrected.Host.auth<-Mwd3$Accepted_SPAUTHOR
+detected.Host.plant<-Mwd3$all.hits.sp.Mycop.plant
+accepted.Fungi.sp<-Mwd3$scientificName
+accepted.Fungi.sp.full.name<-paste(Mwd3$scientificName, Mwd3$Fungi.auth)
+verbatim.Fungi.sp<-Mwd3$scientificName
+habitat.and.plant.part.1<-Mwd3$habitat
+habitat.and.plant.part.2<-Mwd3$associatedTaxa
+habitat.and.plant.part.3<-Mwd3$substrate
+DB<-"Mycoportal"
+Location<-Mwd3$country
+Ref<-Mwd3$occurrenceID
+accepted.Fungi.auth<-Mwd3$Fungi.auth
 
-Host.gen<-word(corrected.Host.sp, 1)
+#
 
 #make final dataframe with both corrected and uncorrected host names in separate columns.
+Myco.po.FIN.df<-cbind.data.frame(corrected.Host.sp, corrected.Host.ssp, corrected.Host.auth, 
+                                detected.Host.plant, accepted.Fungi.sp, accepted.Fungi.sp.full.name, accepted.Fungi.auth, verbatim.Fungi.sp, 
+                                habitat.and.plant.part.1, habitat.and.plant.part.2, habitat.and.plant.part.3, Location, Ref, DB)
 
-Myco.po.FIN.df<-cbind.data.frame(corrected.Host.sp, corrected.Host.auth, corrected.Host.ssp, Mwd2$all.hits.sp.Mycop.plant, Mwd2$scientificName, Mwd2$db, Mwd2$habitat, Mwd2$associatedTaxa,
-                                 Mwd2$substrate, Mwd2$country, Mwd2$occurrenceID, Mwd2$Fungi.auth)
-colnames(Myco.po.FIN.df)<-c("corrected.Host.sp","corrected.Host.auth","corrected.Host.ssp","Host.sp","Fungi.sp","DB","habitat.and.plant.part.1","habitat.and.plant.part.2","habitat.and.plant.part.3",
-                      "Location","Ref","Fungi.auth")
-#remove blank fungal names
-Myco.po.FIN.df<-Myco.po.FIN.df[!Myco.po.FIN.df$Fungi.sp=="",]
-saveRDS(Myco.po.FIN.df, "Cleaned_data/2024-12-21.UPD.Myco.po.FIN.df.rds")
+Myco.po.FIN.df<-Myco.po.FIN.df[!Myco.po.FIN.df$accepted.Fungi.sp=="",]
+saveRDS(Myco.po.FIN.df, "Cleaned_data/2025-05.UPD.Myco.po.FIN.df.rds")
